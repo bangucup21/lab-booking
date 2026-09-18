@@ -1,0 +1,60 @@
+# ══════════════════════════════════════════════════════════════
+#  .gitignore — Lab Management System
+#  Laravel monolith + student-app (React) + teacher-app (React)
+# ══════════════════════════════════════════════════════════════
+
+# ─── Laravel ─────────────────────────────────────────────────
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# ─── Environment & Secrets ───────────────────────────────────
+.env
+.env.*
+!.env.example
+secrets/
+*.key
+*.pem
+
+# ─── React Apps (student-app & teacher-app) ──────────────────
+/student-app/node_modules
+/student-app/.vite
+/student-app/dist
+
+/teacher-app/node_modules
+/teacher-app/.vite
+/teacher-app/dist
+
+# Build output React yang masuk ke public/ (generated, tidak perlu di-commit)
+/public/siswa
+/public/guru
+# TAPI public/app dan public/app-guru boleh dikecualikan juga jika ada
+/public/app
+/public/app-guru
+
+# ─── Vite / Frontend Build ───────────────────────────────────
+/public/build
+/public/hot
+
+# ─── Docker secrets ──────────────────────────────────────────
+secrets/vite_reverb_app_key.txt
+
+# ─── IDE & OS ────────────────────────────────────────────────
+/.idea
+/.vscode
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Logs & Cache ────────────────────────────────────────────
+*.log
+/storage/logs/*.log
+/bootstrap/cache/*.php
+docker-compose.override.yml
