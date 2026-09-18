@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('teacher_id')->nullable()->constrained('teachers')->nullOnDelete();
             $table->foreignId('resource_id')->constrained('resources')->cascadeOnDelete();
-            $table->foreignId('organization_id')->constrained('organizations')->cascadeOnDelete();
+            $table->unsignedBigInteger('organization_id')->nullable();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->date('booking_date');
             $table->string('teacher_name');
