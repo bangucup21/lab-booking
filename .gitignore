@@ -1,6 +1,6 @@
 # ══════════════════════════════════════════════════════════════
 #  .gitignore — Lab Management System
-#  Laravel monolith + student-app (React) + teacher-app (React)
+#  Laravel monolith (Blade + Vite)
 # ══════════════════════════════════════════════════════════════
 
 # ─── Laravel ─────────────────────────────────────────────────
@@ -19,32 +19,18 @@ yarn-error.log
 .env
 .env.*
 !.env.example
-secrets/
 *.key
 *.pem
 
-# ─── React Apps (student-app & teacher-app) ──────────────────
-/student-app/node_modules
-/student-app/.vite
-/student-app/dist
-
-/teacher-app/node_modules
-/teacher-app/.vite
-/teacher-app/dist
-
-# Build output React yang masuk ke public/ (generated, tidak perlu di-commit)
-/public/siswa
-/public/guru
-# TAPI public/app dan public/app-guru boleh dikecualikan juga jika ada
-/public/app
-/public/app-guru
-
-# ─── Vite / Frontend Build ───────────────────────────────────
+# ─── Vite Build Output ───────────────────────────────────────
 /public/build
-/public/hot
 
-# ─── Docker secrets ──────────────────────────────────────────
-secrets/vite_reverb_app_key.txt
+# ─── Storage uploads (runtime, bukan source code) ────────────
+/storage/app/public
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/views
+/storage/logs
 
 # ─── IDE & OS ────────────────────────────────────────────────
 /.idea
@@ -53,8 +39,9 @@ secrets/vite_reverb_app_key.txt
 Thumbs.db
 desktop.ini
 
-# ─── Logs & Cache ────────────────────────────────────────────
+# ─── Logs & Bootstrap Cache ──────────────────────────────────
 *.log
-/storage/logs/*.log
 /bootstrap/cache/*.php
+
+# ─── Docker override (lokal saja) ────────────────────────────
 docker-compose.override.yml

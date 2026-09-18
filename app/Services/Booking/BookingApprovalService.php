@@ -4,9 +4,7 @@ namespace App\Services\Booking;
 
 use App\Events\ScheduleUpdated;
 use App\Models\Booking;
-use App\Models\User;
-use App\Services\LabControlService;
-use App\Services\WhatsAppService;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +13,8 @@ use Illuminate\Support\Facades\Log;
 class BookingApprovalService
 {
     public function __construct(
-        private BookingAccessService  $access,
-        private LabControlService     $labControl,
+        private BookingAccessService   $access,
         private ConflictCheckerService $conflict,
-        private WhatsAppService $waService
     ) {}
 
     // ══════════════════════════════════════════════════════════════════
@@ -30,7 +26,6 @@ class BookingApprovalService
      */
     public function approve(Booking $booking, Request $request): void
     {
-        // ─── Cek bentrok sebelum approve ──────────────────────────
         $conflicts = $this->conflict->check($booking);
 
         if (!empty($conflicts)) {
@@ -50,7 +45,6 @@ class BookingApprovalService
             ]);
         });
 
-        // Broadcast perubahan via Reverb (Update UI Jadwal)
         broadcast(new ScheduleUpdated('regular', 'updated', [
             'resource_id'  => $booking->resource_id,
             'booking_date' => $booking->booking_date->toDateString(),
@@ -58,16 +52,17 @@ class BookingApprovalService
             'status'       => 'approved'
         ]));
 
-        $this->generateSessionAndNotify($booking);
-
-        // Invalidasi cache rekap bulan yang terpengaruh agar data rekap tidak stale
         $this->invalidateRekapCache($booking->booking_date);
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    // DESTROY
+    // ══════════════════════════════════════════════════════════════════
 
     public function destroy(Booking $booking): string
     {
         $title = $booking->title;
-        $data = [
+        $data  = [
             'resource_id'  => $booking->resource_id,
             'booking_date' => $booking->booking_date->toDateString(),
             'time_slot_id' => $booking->time_slot_id,
@@ -76,7 +71,6 @@ class BookingApprovalService
 
         $booking->delete();
 
-        // Broadcast perubahan via Reverb agar slot di jadwal langsung kosong
         broadcast(new ScheduleUpdated('regular', 'deleted', $data));
 
         return $title;
@@ -105,14 +99,13 @@ class BookingApprovalService
             throw new \RuntimeException('Tidak ada booking pending yang bisa disetujui.');
         }
 
-        // ─── Cek bentrok untuk semua slot dalam group ─────────────
         $groupConflicts = $this->conflict->checkGroup($bookings);
 
         if (!empty($groupConflicts)) {
             $messages = [];
             foreach ($groupConflicts as $bookingId => $conflicts) {
                 $b = $bookings->firstWhere('id', $bookingId);
-                $slotName = $b?->timeSlot?->name ?? 'Slot #' . $bookingId;
+                $slotName   = $b?->timeSlot?->name ?? 'Slot #' . $bookingId;
                 $messages[] = $slotName . ': ' . implode(', ', $conflicts);
             }
             throw new \RuntimeException(
@@ -131,33 +124,6 @@ class BookingApprovalService
                 ]);
         });
 
-        // Generate session di luar transaction
-        // Load relasi timeSlot dan resource yang dibutuhkan
-        $bookings->load('timeSlot', 'resource');
-
-        $session = null;
-        foreach ($bookings as $booking) {
-            try {
-                $session = $this->labControl->generateFromBooking($booking);
-            } catch (\Exception $e) {
-                Log::warning('generateFromBooking failed for booking #' . $booking->id . ': ' . $e->getMessage());
-            }
-        }
-
-        if ($session) {
-            try {
-                // Kirim notifikasi WA booking jika toggle aktif (hanya sekali untuk grup, ke guru)
-                if (\App\Models\Setting::isEnabled(\App\Models\Setting::WA_NOTIFY_BOOKING)) {
-                    // Cek is_after_hours dari salah satu booking dalam group
-                    $isAfterHours = (bool) $bookings->first()?->timeSlot?->is_after_hours;
-                    $this->labControl->sendWebhook($session->fresh(), $isAfterHours);
-                }
-            } catch (\Exception $e) {
-                Log::warning('sendWebhook failed: ' . $e->getMessage());
-            }
-        }
-
-        // Broadcast perubahan untuk semua slot di group (Update UI Jadwal)
         foreach ($bookings as $booking) {
             broadcast(new ScheduleUpdated('regular', 'updated', [
                 'resource_id'  => $booking->resource_id,
@@ -167,7 +133,6 @@ class BookingApprovalService
             ]));
         }
 
-        // Invalidasi cache rekap bulan yang terpengaruh
         $this->invalidateRekapCache($bookings->first()->booking_date);
 
         return $bookings->count();
@@ -177,14 +142,13 @@ class BookingApprovalService
     // REJECT
     // ══════════════════════════════════════════════════════════════════
 
-    public function reject(Booking $booking, ?string $notes=null): void
+    public function reject(Booking $booking, ?string $notes = null): void
     {
         $booking->update([
             'status' => 'rejected',
             'notes'  => $notes,
         ]);
 
-        // Broadcast perubahan via Reverb (agar slot yang tadi dipesan jadi kosong lagi)
         broadcast(new ScheduleUpdated('regular', 'updated', [
             'resource_id'  => $booking->resource_id,
             'booking_date' => $booking->booking_date->toDateString(),
@@ -228,7 +192,6 @@ class BookingApprovalService
                 ]);
         });
 
-        // Broadcast perubahan untuk semua slot di group
         foreach ($bookings as $booking) {
             broadcast(new ScheduleUpdated('regular', 'updated', [
                 'resource_id'  => $booking->resource_id,
@@ -245,38 +208,11 @@ class BookingApprovalService
     // PRIVATE
     // ══════════════════════════════════════════════════════════════════
 
-    private function generateSessionAndNotify(Booking $booking): void
-    {
-        try {
-            // Load relasi yang dibutuhkan agar tidak trigger lazy load / fresh()
-            $booking->loadMissing('timeSlot', 'resource');
-            $isAfterHours = (bool) ($booking->timeSlot?->is_after_hours ?? false);
-            $session = $this->labControl->generateFromBooking($booking);
-
-            // sendWebhook sudah mengecek toggle WA_NOTIFY_LAB secara internal
-            if ($session) {
-                // Kirim notifikasi WA booking jika toggle aktif (ke guru)
-                if (\App\Models\Setting::isEnabled(\App\Models\Setting::WA_NOTIFY_BOOKING)) {
-                    $this->labControl->sendWebhook($session->fresh(), $isAfterHours);
-                }
-            }
-        } catch (\Exception $e) {
-            Log::warning('Session generation failed for booking #' . $booking->id . ': ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Hapus cache rekap bulanan agar data rekap tidak stale setelah
-     * ada perubahan status booking (approve/reject).
-     */
     private function invalidateRekapCache(mixed $bookingDate): void
     {
         try {
             $date  = $bookingDate instanceof \Carbon\Carbon ? $bookingDate : \Carbon\Carbon::parse($bookingDate);
-            $month = $date->month;
-            $year  = $date->year;
-            Cache::forget("rekap_monthly_{$month}_{$year}");
-            // Dashboard cache (variant admin penuh)
+            Cache::forget("rekap_monthly_{$date->month}_{$date->year}");
             Cache::forget('dashboard_all');
         } catch (\Exception $e) {
             Log::warning('invalidateRekapCache failed: ' . $e->getMessage());

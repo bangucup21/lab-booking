@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Booking;
-use App\Models\LabInventory;
 use App\Models\Resource;
 use App\Models\Schedule;
 use App\Models\TimeSlot;
@@ -60,9 +59,7 @@ class DashboardService
             ->when($allowedResources, fn($q) => $q->whereIn('resource_id', $allowedResources))
             ->count();
 
-        $totalBroken = LabInventory::where('quantity_broken', '>', 0)
-            ->when($allowedResources, fn($q) => $q->whereIn('resource_id', $allowedResources))
-            ->count();
+        $totalBroken = 0;
 
         // 2. Booking per Hari Minggu Ini
         $weekStart = now()->startOfWeek(Carbon::SUNDAY);

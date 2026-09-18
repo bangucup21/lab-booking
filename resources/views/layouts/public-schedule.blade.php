@@ -284,16 +284,8 @@
         <div class="pub-links">
             <a href="{{ route('home') }}"
                class="pub-link {{ request()->routeIs('home') ? 'on' : '' }}">Jadwal</a>
-            <a href="{{ route('inventory.public') }}"
-               class="pub-link {{ request()->routeIs('inventory.public') ? 'on' : '' }}">Inventaris</a>
             <a href="{{ route('rekap.public') }}"
                class="pub-link {{ request()->routeIs('rekap.public') ? 'on' : '' }}">Rekap</a>
-            <a href="{{ route('assignment.public') }}"
-               class="pub-link {{ request()->routeIs('assignment.public') ? 'on' : '' }}">Tugas</a>
-            <a href="{{ route('journal.index') }}"
-               class="pub-link {{ request()->routeIs('journal.*') ? 'on' : '' }}">Jurnal Lab</a>
-            <a href="{{ route('assignment.admin') }}"
-               class="pub-link {{ request()->routeIs('assignment.admin') ? 'on' : '' }}">Panel Guru</a>
         </div>
 
         {{-- CTA --}}
@@ -321,16 +313,8 @@
     <div class="pub-nav-row2">
         <a href="{{ route('home') }}"
            class="pub-nav2-link {{ request()->routeIs('home') ? 'on' : '' }}">Jadwal</a>
-        <a href="{{ route('inventory.public') }}"
-           class="pub-nav2-link {{ request()->routeIs('inventory.public') ? 'on' : '' }}">Inventaris</a>
         <a href="{{ route('rekap.public') }}"
            class="pub-nav2-link {{ request()->routeIs('rekap.public') ? 'on' : '' }}">Rekap</a>
-        <a href="{{ route('assignment.public') }}"
-           class="pub-nav2-link {{ request()->routeIs('assignment.public') ? 'on' : '' }}">Tugas</a>
-        <a href="{{ route('journal.index') }}"
-           class="pub-nav2-link {{ request()->routeIs('journal.*') ? 'on' : '' }}">Jurnal Lab</a>
-        <a href="{{ route('assignment.admin') }}"
-           class="pub-nav2-link {{ request()->routeIs('assignment.admin') ? 'on' : '' }}">Panel Guru</a>
     </div>
 </nav>
 

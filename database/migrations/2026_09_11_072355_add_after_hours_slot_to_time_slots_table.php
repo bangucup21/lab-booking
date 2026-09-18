@@ -27,19 +27,18 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::table('time_slots', function (Blueprint $table) {
-            $table->boolean('is_after_hours')->default(false)->after('is_break');
-        });
+        // is_after_hours column already exists from create_base_tables migration
+        // Only insert the slot data
 
-        // slot_order dihitung dinamis (max existing + 1) supaya slot ini selalu
-        // urut paling akhir di grid, apapun jumlah/urutan slot reguler saat ini.
-        $nextOrder = (int) (DB::table('time_slots')->max('slot_order') ?? 0) + 1;
+        // slot_order di-hardcode ke 10 karena slot reguler (Jam ke-1 s.d Jam ke-7 + 2 istirahat)
+        // berjumlah 9 slot dengan order 1-9. Nilai ini aman selama jumlah slot reguler < 10.
+        $nextOrder = 10;
 
         DB::table('time_slots')->insert([
             'name'           => self::SLOT_NAME,
             'start_time'     => '13:00:00',
             'end_time'       => '17:00:00',
-            'day_of_week'    => null, // null = berlaku semua hari; Minggu sudah diblokir di level controller
+            'day_of_week'    => null,
             'slot_order'     => $nextOrder,
             'is_break'       => false,
             'is_after_hours' => true,
@@ -48,18 +47,12 @@ return new class extends Migration
             'updated_at'     => now(),
         ]);
 
-        // getActiveTimeSlots() di-cache 1 jam (ScheduleQueryService) — invalidate
-        // supaya slot baru langsung muncul tanpa nunggu TTL habis.
         Cache::forget('active_time_slots');
     }
 
     public function down(): void
     {
         DB::table('time_slots')->where('name', self::SLOT_NAME)->delete();
-
-        Schema::table('time_slots', function (Blueprint $table) {
-            $table->dropColumn('is_after_hours');
-        });
 
         Cache::forget('active_time_slots');
     }

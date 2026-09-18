@@ -29,32 +29,9 @@ export default defineConfig({
                 'resources/css/booking.css',
                 'resources/js/booking.js',
 
-                // ── Inventaris ───────────────────────────────
-                'resources/css/inventory.css',
-                'resources/js/inventory.js',
-
-                // ── Inventaris Admin ─────────────────────────
-                'resources/css/inventoryadmin.css',
-                'resources/js/inventoryadmin.js',
-
                 // ── Rekap ────────────────────────────────────
                 'resources/css/rekap.css',
                 'resources/js/rekap.js',
-
-                // ── Assignment/Tugas ─────────────────────────
-                'resources/css/assignment.css',
-
-                // ── Kelas ────────────────────────────────────
-                'resources/css/kelas.css',
-                'resources/js/kelas.js',
-
-                // ── Sekolah/Organisasi ───────────────────────
-                'resources/css/sekolah.css',
-                'resources/js/sekolah.js',
-
-                // ── Guru ─────────────────────────────────────
-                'resources/css/teacher.css',
-                'resources/js/teacher.js',
 
                 // ── Jadwal Penting ───────────────────────────
                 'resources/css/important.css',
@@ -63,10 +40,6 @@ export default defineConfig({
                 // ── Users ────────────────────────────────────
                 'resources/css/users.css',
                 'resources/js/users.js',
-
-                // ── Journal ──────────────────────────────────
-                'resources/css/journal.css',
-                'resources/js/journal.js',
             ],
             refresh: true,
         }),

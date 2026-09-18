@@ -10,8 +10,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // session_id column already exists from create_base_tables migration
+        // Only add the index and backfill existing data
+
         Schema::table('bookings', function (Blueprint $table) {
-            $table->char('session_id', 36)->nullable()->after('id')->index();
+            $table->index('session_id');
         });
 
         // Isi session_id untuk data lama:
@@ -22,9 +25,9 @@ return new class extends Migration
                 teacher_name,
                 resource_id,
                 booking_date,
-                TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') as created_minute
+                DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as created_minute
             ")
-            ->groupBy('teacher_name', 'resource_id', 'booking_date', DB::raw("TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI')"))
+            ->groupBy('teacher_name', 'resource_id', 'booking_date', DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i')"))
             ->get();
 
         foreach ($groups as $group) {
@@ -33,7 +36,7 @@ return new class extends Migration
                 ->where('teacher_name', $group->teacher_name)
                 ->where('resource_id', $group->resource_id)
                 ->where('booking_date', $group->booking_date)
-                ->whereRaw("TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI') = ?", [$group->created_minute])
+                ->whereRaw("DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') = ?", [$group->created_minute])
                 ->whereNull('session_id')
                 ->update(['session_id' => $sessionId]);
         }
@@ -43,7 +46,6 @@ return new class extends Migration
     {
         Schema::table('bookings', function (Blueprint $table) {
             $table->dropIndex(['session_id']);
-            $table->dropColumn('session_id');
         });
     }
 };

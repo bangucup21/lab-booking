@@ -9,7 +9,7 @@ class TeacherController extends Controller
 {
     public function index()
     {
-        $teachers = Teacher::withCount(['schedules', 'bookings', 'assignments'])
+        $teachers = Teacher::withCount(['schedules', 'bookings'])
             ->orderBy('name')
             ->get();
         return view('teachers.index', compact('teachers'));

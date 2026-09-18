@@ -12,6 +12,7 @@ use App\Http\Controllers\RekapPublicController;
 use App\Http\Controllers\AssignmentPublicController;
 use App\Http\Controllers\AssignmentAdminController;
 use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\LabController;
 use App\Http\Controllers\LabControlController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\LabClassController;
@@ -196,12 +197,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/laporan-penggunaan', [UsageReportController::class, 'index'])->name('reports.usage.index');
     Route::get('/laporan-penggunaan/generate', [UsageReportController::class, 'generate'])->name('reports.usage.generate');
     
-    // Guru (data guru / manajemen akun guru — path dipisah dari /guru
-    // karena /guru dipakai sebagai entry point dashboard React guru untuk tugas)
+    // Guru
     Route::get('/data-guru', [TeacherController::class, 'index'])->name('teacher.index');
     Route::post('/data-guru', [TeacherController::class, 'store'])->name('teacher.store');
     Route::patch('/data-guru/{teacher}', [TeacherController::class, 'update'])->name('teacher.update');
     Route::delete('/data-guru/{teacher}', [TeacherController::class, 'destroy'])->name('teacher.destroy');
+
+    // Kelola Lab
+    Route::get('/kelola-lab', [LabController::class, 'index'])->name('lab.index');
+    Route::post('/kelola-lab', [LabController::class, 'store'])->name('lab.store');
+    Route::patch('/kelola-lab/{lab}', [LabController::class, 'update'])->name('lab.update');
+    Route::delete('/kelola-lab/{lab}', [LabController::class, 'destroy'])->name('lab.destroy');
 
     // Sekolah & Kelas
     Route::get('/sekolah', [OrganizationController::class, 'index'])->name('organization.index');

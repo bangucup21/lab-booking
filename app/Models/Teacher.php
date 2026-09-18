@@ -23,11 +23,6 @@ class Teacher extends Model
         return $this->hasMany(SundayBooking::class);
     }
 
-    public function assignments()
-    {
-        return $this->hasMany(Assignment::class);
-    }
-
     public static function generateUniqueToken(): string
     {
         $last = self::orderBy('id', 'desc')->first();

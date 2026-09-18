@@ -8,16 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Kolom standar Laravel untuk fitur "Ingat saya"
-            $table->rememberToken()->nullable()->after('is_active');
-        });
+        // remember_token column already exists from create_base_tables migration
+        // Nothing to do here
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('remember_token');
-        });
+        // Nothing to undo
     }
 };

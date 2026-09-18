@@ -30,11 +30,6 @@ class Resource extends Model
         return $this->hasMany(Booking::class);
     }
 
-    public function inventory()
-    {
-        return $this->hasMany(LabInventory::class);
-    }
-    
     public function organization()
     {
         return $this->belongsTo(Organization::class);

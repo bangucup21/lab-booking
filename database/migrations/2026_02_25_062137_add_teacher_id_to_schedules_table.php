@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::table('schedules', function (Blueprint $table) {
-            $table->foreignId('teacher_id')->nullable()->after('id')
-                  ->constrained('teachers')->nullOnDelete();
+            // teacher_id column already exists from create_base_tables migration
+            // Only add the foreign key constraint here
+            $table->foreign('teacher_id')->references('id')->on('teachers')->nullOnDelete();
         });
     }
     public function down(): void {
         Schema::table('schedules', function (Blueprint $table) {
             $table->dropForeign(['teacher_id']);
-            $table->dropColumn('teacher_id');
         });
     }
 };
