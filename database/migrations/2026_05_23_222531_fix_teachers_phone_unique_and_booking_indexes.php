@@ -22,11 +22,8 @@ return new class extends Migration
             );
         });
 
-        // 3. Fix user_sessions.expires_at — PostgreSQL syntax
-        DB::statement("
-            ALTER TABLE user_sessions
-            ALTER COLUMN expires_at SET DEFAULT CURRENT_TIMESTAMP
-        ");
+        // 3. Fix user_sessions.expires_at default — MySQL syntax
+        DB::statement("ALTER TABLE user_sessions MODIFY expires_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP");
     }
 
     public function down(): void
@@ -39,9 +36,6 @@ return new class extends Migration
             $table->dropIndex('idx_booking_conflict');
         });
 
-        DB::statement("
-            ALTER TABLE user_sessions
-            ALTER COLUMN expires_at SET DEFAULT CURRENT_TIMESTAMP
-        ");
+        DB::statement("ALTER TABLE user_sessions MODIFY expires_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP");
     }
 };
